@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class OwnBeacons {
 
-    static long connectionLostTime = 2000;
+    static final long CONNECTION_LOST_TIME = 2000;
 
     static HashMap getOwnBeaconsNameHashMap() {
         HashMap<String, String> beaconNamesMap = new HashMap<>();

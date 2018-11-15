@@ -3,4 +3,6 @@
     <string name="app_name">Beacons testing</string>
     <string name="action_settings">Settings</string>
 
+    <string name="section_format">Hello blank fragment</string>
+
 </resources>

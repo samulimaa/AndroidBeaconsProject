@@ -26,7 +26,7 @@ public class TimeMeasure {
     public void stopMeasuringTime(TimeMeasuringThread timeMeasuringThread) {
         Beacon measuredBeacon = timeMeasuringThread.getBeacon();
         beaconTimeMeasureMap.remove(measuredBeacon);
-        measuredTime = timeMeasuringThread.getMeasuredTime() - OwnBeacons.connectionLostTime;
+        measuredTime = timeMeasuringThread.getMeasuredTime() - OwnBeacons.CONNECTION_LOST_TIME;
         timeMeasuringThread.stopThread();
         measureStopped = true;
         if (getMeasuredTimeInSeconds() > 1) {
@@ -45,7 +45,7 @@ public class TimeMeasure {
         if (beaconTimeMeasureMap.containsKey(currentBeacon)) {
             //debugToConsole("check if stop");
             TimeMeasuringThread thread = beaconTimeMeasureMap.get(currentBeacon);
-            if (System.currentTimeMillis() - thread.getLastSeen() > OwnBeacons.connectionLostTime) { //connection lost over 2s
+            if (System.currentTimeMillis() - thread.getLastSeen() > OwnBeacons.CONNECTION_LOST_TIME) { //connection lost over 2s
                 stopMeasuringTime(thread);
             }
         }

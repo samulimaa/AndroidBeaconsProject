@@ -42,9 +42,10 @@ public class DatabaseSender {
         }
     }
 }
+
 class DataSendRequest extends StringRequest {
 
-    private static final String REGISTER_REQUEST_URL = ""; //URL HERE
+    private static final String REGISTER_REQUEST_URL = "http://testiaccountservu.gear.host/DataIn.php";
     private Map<String, String> params;
 
     /*public DataSendRequest(int user_id, long time, String beaconName, Response.Listener<String> listener) {
