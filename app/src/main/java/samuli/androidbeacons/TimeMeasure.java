@@ -14,7 +14,6 @@ public class TimeMeasure {
     private boolean measureDataValid;
     private long measuredTime;
 
-
     public void startMeasuringTime(Beacon b) {
         TimeMeasuringThread timeMeasurementThread = new TimeMeasuringThread(b);
         timeMeasurementThread.start();
@@ -31,8 +30,8 @@ public class TimeMeasure {
         measureStopped = true;
         if (getMeasuredTimeInSeconds() > 1) {
             measureDataValid = true;
-            DatabaseSender databaseSender = new DatabaseSender(measuredBeacon, getMeasuredTimeInSeconds());
-            databaseSender.sendToDatabase();
+            DatabaseSender databaseSender = new DatabaseSender();
+            databaseSender.sendToDatabase(measuredBeacon, getMeasuredTimeInSeconds());
         }
     }
 

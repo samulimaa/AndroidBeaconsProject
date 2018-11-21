@@ -9,39 +9,78 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class FragmentVisualize extends Fragment {
+public class FragmentVisualize extends Fragment implements DatabaseDataAvailable {
 
-    PieChart pieChart;
-    PieChart pieChart2;
+    private PieChart pieChart;
+    private PieChart pieChart2;
 
-    private int[] yData = {13, 8, 5};
-    //private String[] xData = {"Keltainen", "Punainen", "Pinkki"};
-    private int[] yData2 = {4, 9, 9};
+    private BarChart barChart;
+
+    private ArrayList<Integer> allUsersTime = new ArrayList<>();
+
+    private HashMap<String, Integer> allUsersMap = new HashMap<String, Integer>();
+    private HashMap<String, Integer> CurrentUserMap = new HashMap<String, Integer>();
 
     Context mainActivityContext = MainActivity.getContext();
+
+    private View view;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.tab_visualize,container,false);
-
-        pieChart = view.findViewById(R.id.idPieChart);
-        pieChart = createPieChart(pieChart, yData, "You");
-
-        pieChart2 = view.findViewById(R.id.idPieChart2);
-        pieChart2 = createPieChart(pieChart2, yData2, "All users");
-
+        this.view = view;
+        getFromDatabase();
         return view;
     }
 
-    private PieChart createPieChart(PieChart pieChart, int[] yData, String centerText) {
+
+    private void getFromDatabase() {
+        DatabaseGetter databaseGetter = new DatabaseGetter();
+        databaseGetter.setNotifierDataAvailable(this);
+        databaseGetter.start();
+    }
+
+    @Override
+    public void dataAvailable(JSONObject jsonObject) {
+
+        System.out.println(jsonObject);
+
+        allUsersMap = JSONParser.parseAllUsersTime(jsonObject);
+        System.out.println(allUsersMap.toString());
+
+        for (Map.Entry<String, Integer> entry : allUsersMap.entrySet()) {
+            allUsersTime.add(entry.getValue());
+        }
+
+
+        pieChart = view.findViewById(R.id.idPieChart);
+        pieChart = createPieChart(pieChart, allUsersTime, "All users");
+
+
+        barChart = view.findViewById(R.id.idBarChart);
+        barChart = createBarChart(barChart);
+    }
+
+    private PieChart createPieChart(PieChart pieChart, ArrayList<Integer> yData, String centerText) {
         pieChart.setCenterText(centerText);
         pieChart.setCenterTextSize(15f);
         pieChart.setDrawEntryLabels(true);
@@ -51,10 +90,9 @@ public class FragmentVisualize extends Fragment {
 
         ArrayList<PieEntry> yEntrys = new ArrayList<>();
 
-        for(int i = 0; i < yData.length; i++){
-            yEntrys.add(new PieEntry(yData[i] , i));
+        for(int i = 0; i < yData.size(); i++){
+            yEntrys.add(new PieEntry(yData.get(i), i));
         }
-
 
         PieDataSet pieDataSet = new PieDataSet(yEntrys, "");
         pieDataSet.setValueTextColor(ContextCompat.getColor(mainActivityContext, R.color.lightblue));
@@ -72,5 +110,44 @@ public class FragmentVisualize extends Fragment {
         pieChart.invalidate();
 
         return pieChart;
+    }
+
+    private BarChart createBarChart(BarChart barChart) {
+
+        ArrayList<Integer> barYData = new ArrayList<>();
+        barYData.add(5);
+        barYData.add(6);
+        barYData.add(4);
+        barYData.add(8);
+
+        ArrayList<String> barXData = new ArrayList<>();
+        barXData.add("aa");
+        barXData.add("aaa");
+        barXData.add("aaaa");
+
+        ArrayList<BarEntry> group = new ArrayList<>();
+        for (int i = 0; i < barYData.size(); i++) {
+            group.add(new BarEntry(i,barYData.get(i)));
+        }
+
+        BarDataSet barDataSet = new BarDataSet(group, "label");
+
+        List<IBarDataSet> barDataSets = new ArrayList<>();
+        barDataSets.add(barDataSet);
+
+        BarData barData = new BarData(barDataSets);
+        barData.setBarWidth(0.5f);
+        barData.setDrawValues(true);
+
+        barChart.setFitBars(true);
+        barChart.setPinchZoom(false);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        barChart.setData(barData);
+
+        barChart.invalidate();
+        return barChart;
     }
 }

@@ -29,5 +29,14 @@
 
         </com.github.mikephil.charting.charts.PieChart>
 
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/idBarChart"
+            android:layout_width="match_parent"
+            android:layout_height="800dp">
+
+        </com.github.mikephil.charting.charts.BarChart>
+
+
+
     </LinearLayout>
  </ScrollView>

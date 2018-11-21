@@ -77,11 +77,7 @@ public class FragmentMeasure extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        System.out.println("TEST1 FRAGMENT1");
         View view = inflater.inflate(R.layout.tab_measure,container,false);
-
-
-        System.out.println("TEST1 FRAGMENT2");
 
         textview = view.findViewById(R.id.textView);
         textview2 = view.findViewById(R.id.textView2);
@@ -110,7 +106,7 @@ public class FragmentMeasure extends Fragment {
         buttonDecrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (maxDistanceToBeacon > 0.1) {
+                if (maxDistanceToBeacon >= 0.1) {
                     maxDistanceToBeacon -= 0.1;
                     String maxDistance = new DecimalFormat("0.0#").format(maxDistanceToBeacon);
                     textview.setText("Displaying beacons which distance is less than " + maxDistance + "m");
