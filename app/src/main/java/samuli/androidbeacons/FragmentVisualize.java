@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 public class FragmentVisualize extends Fragment implements DatabaseDataAvailable {
 
     private PieChart pieChart;
@@ -34,10 +33,11 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
 
     private BarChart barChart;
 
+    private ArrayList<Integer> currentUserTime = new ArrayList<>();
     private ArrayList<Integer> allUsersTime = new ArrayList<>();
 
-    private HashMap<String, Integer> allUsersMap = new HashMap<String, Integer>();
-    private HashMap<String, Integer> CurrentUserMap = new HashMap<String, Integer>();
+    private HashMap<String, Integer> currentUserMap = new HashMap<>();
+    private HashMap<String, Integer> allUsersMap = new HashMap<>();
 
     Context mainActivityContext = MainActivity.getContext();
 
@@ -64,20 +64,28 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
 
         System.out.println(jsonObject);
 
+        currentUserMap = JSONParser.parseCurrentUserTime(jsonObject, 7);
         allUsersMap = JSONParser.parseAllUsersTime(jsonObject);
+
+        System.out.println(currentUserMap.toString());
         System.out.println(allUsersMap.toString());
+
+        for (Map.Entry<String, Integer> entry: currentUserMap.entrySet()) {
+            currentUserTime.add(entry.getValue());
+        }
 
         for (Map.Entry<String, Integer> entry : allUsersMap.entrySet()) {
             allUsersTime.add(entry.getValue());
         }
 
-
         pieChart = view.findViewById(R.id.idPieChart);
-        pieChart = createPieChart(pieChart, allUsersTime, "All users");
+        pieChart = createPieChart(pieChart, currentUserTime, "You");
 
+        pieChart2 = view.findViewById(R.id.idPieChart2);
+        pieChart2 = createPieChart(pieChart2, allUsersTime, "All users");
 
-        barChart = view.findViewById(R.id.idBarChart);
-        barChart = createBarChart(barChart);
+        //barChart = view.findViewById(R.id.idBarChart);
+        //barChart = createBarChart(barChart);
     }
 
     private PieChart createPieChart(PieChart pieChart, ArrayList<Integer> yData, String centerText) {
@@ -87,6 +95,7 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
         pieChart.setEntryLabelTextSize(15f);
         pieChart.getDescription().setText("");
         pieChart.getDescription().setTextSize(15f);
+        pieChart.getLegend().setEnabled(true);
 
         ArrayList<PieEntry> yEntrys = new ArrayList<>();
 
@@ -99,9 +108,11 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
         pieDataSet.setValueTextSize(20);
 
         ArrayList<Integer> colors = new ArrayList<>();
+        colors.add(ContextCompat.getColor(mainActivityContext, R.color.blue));
         colors.add(ContextCompat.getColor(mainActivityContext, R.color.yellow));
+        colors.add(ContextCompat.getColor(mainActivityContext, R.color.green));
         colors.add(ContextCompat.getColor(mainActivityContext, R.color.maroon));
-        colors.add(ContextCompat.getColor(mainActivityContext, R.color.pink));
+        colors.add(ContextCompat.getColor(mainActivityContext, R.color.orange));
         pieDataSet.setColors(colors);
 
         PieData pieData = new PieData(pieDataSet);

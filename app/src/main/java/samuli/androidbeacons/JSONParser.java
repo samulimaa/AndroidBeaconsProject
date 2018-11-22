@@ -8,34 +8,51 @@ import java.util.HashMap;
 
 public class JSONParser {
 
-    static int[] parseCurrentUserTime(JSONObject jsonObject) {
-        return new int[] {1, 2};
+    static HashMap<String, Integer> parseCurrentUserTime(JSONObject jsonObject, int user_id) {
+        HashMap beaconTimeMap = new HashMap<String, Integer>();
+        try {
+            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
+                if(user_id == jsonObjectEntry.getInt("user_id")) {
+                    String beacon_name = jsonObjectEntry.getString("beacon_name");
+                    int time = jsonObjectEntry.getInt("seconds");
+                    if (beaconTimeMap.containsKey(beacon_name)) {
+                        int oldTime = (int) beaconTimeMap.get(beacon_name);
+                        beaconTimeMap.remove(beacon_name);
+                        beaconTimeMap.put(beacon_name, oldTime + time);
+                    } else {
+                        beaconTimeMap.put(beacon_name, time);
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return beaconTimeMap;
     }
 
     static HashMap<String, Integer> parseAllUsersTime(JSONObject jsonObject) {
-        HashMap deviceTimeMap = new HashMap<String, Integer>();
-        JSONArray jsonArray = null;
+        HashMap beaconTimeMap = new HashMap<String, Integer>();
         try {
-            jsonArray = jsonObject.getJSONArray("data");
+            JSONArray jsonArray = jsonObject.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
-                String device = jsonObjectEntry.getString("beacon_name");
+                String beacon_name = jsonObjectEntry.getString("beacon_name");
                 int time = jsonObjectEntry.getInt("seconds");
-                if (deviceTimeMap.containsKey(device)) {
-                    int oldTime = (int) deviceTimeMap.get(device);
-                    deviceTimeMap.remove(device);
-                    deviceTimeMap.put(device, oldTime + time);
+                if (beaconTimeMap.containsKey(beacon_name)) {
+                    int oldTime = (int) beaconTimeMap.get(beacon_name);
+                    beaconTimeMap.remove(beacon_name);
+                    beaconTimeMap.put(beacon_name, oldTime + time);
                 } else {
-                    deviceTimeMap.put(device, time);
+                    beaconTimeMap.put(beacon_name, time);
                 }
-
             }
-
-        }catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return deviceTimeMap;
+        return beaconTimeMap;
     }
 
 }

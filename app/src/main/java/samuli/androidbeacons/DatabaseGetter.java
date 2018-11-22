@@ -12,10 +12,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Samuli on 21.11.2018.
- */
-
 public class DatabaseGetter extends Thread {
 
     DatabaseDataAvailable notifier;
@@ -59,14 +55,14 @@ public class DatabaseGetter extends Thread {
 
     private class DataGetRequest extends StringRequest {
 
-        private static final String LOGIN_REQUEST_URL = "https://testiaccountservu.gear.host/DataOutTest.php";
+        private static final String LOGIN_REQUEST_URL = "https://testiaccountservu.gear.host/UsersDataOut.php";
         private Map<String, String> params;
 
         public DataGetRequest(int user_id, Response.Listener<String> listener) {
             super(Request.Method.POST, LOGIN_REQUEST_URL, listener, null);
             params = new HashMap<>();
-            params.put("user_id", user_id + "");
         }
+
         @Override
         public Map<String, String> getParams() {
             return params;

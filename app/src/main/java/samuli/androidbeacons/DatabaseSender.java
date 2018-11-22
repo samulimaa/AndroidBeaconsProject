@@ -16,8 +16,6 @@ public class DatabaseSender extends Thread {
 
     int user_id = 7;
 
-    DatabaseDataAvailable dataAvailableNotifier;
-
     DatabaseSender() {
     }
 
