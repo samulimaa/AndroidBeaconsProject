@@ -8,6 +8,8 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
@@ -18,14 +20,18 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+
 public class FragmentVisualize extends Fragment implements DatabaseDataAvailable {
 
     private PieChart pieChart;
@@ -33,11 +39,15 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
 
     private BarChart barChart;
 
+    LinearLayout linearLayout;
+
     private ArrayList<Integer> currentUserTime = new ArrayList<>();
     private ArrayList<Integer> allUsersTime = new ArrayList<>();
 
     private HashMap<String, Integer> currentUserMap = new HashMap<>();
     private HashMap<String, Integer> allUsersMap = new HashMap<>();
+
+    private int beaconsAmount;
 
     Context mainActivityContext = MainActivity.getContext();
 
@@ -48,6 +58,7 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.tab_visualize,container,false);
         this.view = view;
+        linearLayout = view.findViewById(R.id.linearLayout);
         getFromDatabase();
         return view;
     }
@@ -70,25 +81,43 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
         System.out.println(currentUserMap.toString());
         System.out.println(allUsersMap.toString());
 
-        for (Map.Entry<String, Integer> entry: currentUserMap.entrySet()) {
-            currentUserTime.add(entry.getValue());
-        }
-
-        for (Map.Entry<String, Integer> entry : allUsersMap.entrySet()) {
-            allUsersTime.add(entry.getValue());
-        }
+        beaconsAmount = JSONParser.parseBeaconsAmount(jsonObject);
+        System.out.println(beaconsAmount);
 
         pieChart = view.findViewById(R.id.idPieChart);
-        pieChart = createPieChart(pieChart, currentUserTime, "You");
+        pieChart = createPieChart(pieChart, currentUserMap, "You");
 
         pieChart2 = view.findViewById(R.id.idPieChart2);
-        pieChart2 = createPieChart(pieChart2, allUsersTime, "All users");
+        pieChart2 = createPieChart(pieChart2, allUsersMap, "All users");
 
-        //barChart = view.findViewById(R.id.idBarChart);
-        //barChart = createBarChart(barChart);
+
+        ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObject);
+
+        for (int i = 0; i < beaconsAmount; i++) {
+            TextView textView = new TextView(mainActivityContext);
+            textView.setText(beaconNames.get(i));
+            textView.setTextSize(20f);
+
+            LinearLayout.LayoutParams layoutParamsTextView = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 100);
+
+            BarChart barChart = new BarChart(mainActivityContext);
+            LinearLayout.LayoutParams layoutParamsBarChart = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 700);
+
+            textView.setLayoutParams(layoutParamsTextView);
+            barChart.setLayoutParams(layoutParamsBarChart);
+
+            HashMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObject, beaconNames.get(i));
+            System.out.println(barChartData);
+            barChart = createBarChart(barChart, barChartData);
+
+            linearLayout.addView(textView);
+            linearLayout.addView(barChart);
+        }
     }
 
-    private PieChart createPieChart(PieChart pieChart, ArrayList<Integer> yData, String centerText) {
+    private PieChart createPieChart(PieChart pieChart, HashMap<String, Integer> dataHashMap, String centerText) {
         pieChart.setCenterText(centerText);
         pieChart.setCenterTextSize(15f);
         pieChart.setDrawEntryLabels(true);
@@ -99,8 +128,10 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
 
         ArrayList<PieEntry> yEntrys = new ArrayList<>();
 
-        for(int i = 0; i < yData.size(); i++){
-            yEntrys.add(new PieEntry(yData.get(i), i));
+        TreeMap<String, Integer> sortedDataMap = new TreeMap(dataHashMap);
+
+        for (Map.Entry<String, Integer> entry : sortedDataMap.entrySet()) {
+            yEntrys.add(new PieEntry(entry.getValue(), entry.getKey()));
         }
 
         PieDataSet pieDataSet = new PieDataSet(yEntrys, "");
@@ -109,7 +140,7 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
 
         ArrayList<Integer> colors = new ArrayList<>();
         colors.add(ContextCompat.getColor(mainActivityContext, R.color.blue));
-        colors.add(ContextCompat.getColor(mainActivityContext, R.color.yellow));
+        colors.add(ContextCompat.getColor(mainActivityContext, R.color.magenta));
         colors.add(ContextCompat.getColor(mainActivityContext, R.color.green));
         colors.add(ContextCompat.getColor(mainActivityContext, R.color.maroon));
         colors.add(ContextCompat.getColor(mainActivityContext, R.color.orange));
@@ -123,38 +154,41 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
         return pieChart;
     }
 
-    private BarChart createBarChart(BarChart barChart) {
+    private BarChart createBarChart(BarChart barChart, HashMap<String, Integer> dataMap) {
+
+        TreeMap<String, Integer> dataTreeMap = new TreeMap(dataMap);
 
         ArrayList<Integer> barYData = new ArrayList<>();
-        barYData.add(5);
-        barYData.add(6);
-        barYData.add(4);
-        barYData.add(8);
+        barYData.addAll(dataTreeMap.values());
 
         ArrayList<String> barXData = new ArrayList<>();
-        barXData.add("aa");
-        barXData.add("aaa");
-        barXData.add("aaaa");
+        barXData.addAll(dataTreeMap.keySet());
 
         ArrayList<BarEntry> group = new ArrayList<>();
         for (int i = 0; i < barYData.size(); i++) {
-            group.add(new BarEntry(i,barYData.get(i)));
+            group.add(new BarEntry(i, barYData.get(i)));
         }
 
-        BarDataSet barDataSet = new BarDataSet(group, "label");
+        barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(barXData));
+        barChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        barChart.getXAxis().setTextSize(15f);
+        barChart.getDescription().setEnabled(false);
+
+        barChart.getAxisLeft().setAxisMinimum(0);
+        barChart.getAxisLeft().setTextSize(15f);
+        barChart.getAxisRight().setTextSize(15f);
+        BarDataSet barDataSet = new BarDataSet(group, null);
+        barDataSet.setValueTextSize(15f);
 
         List<IBarDataSet> barDataSets = new ArrayList<>();
         barDataSets.add(barDataSet);
 
         BarData barData = new BarData(barDataSets);
-        barData.setBarWidth(0.5f);
+        barData.setBarWidth(0.8f);
         barData.setDrawValues(true);
 
         barChart.setFitBars(true);
         barChart.setPinchZoom(false);
-
-        XAxis xAxis = barChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 
         barChart.setData(barData);
 

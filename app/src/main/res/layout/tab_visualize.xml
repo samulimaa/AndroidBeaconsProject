@@ -7,6 +7,7 @@
     android:background="@color/gray">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -15,28 +16,22 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
+
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/idPieChart"
             android:layout_width="match_parent"
             android:layout_height="300dp">
-
         </com.github.mikephil.charting.charts.PieChart>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="50dp"/>
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/idPieChart2"
             android:layout_width="match_parent"
             android:layout_height="300dp">
-
         </com.github.mikephil.charting.charts.PieChart>
-
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/idBarChart"
-            android:layout_width="match_parent"
-            android:layout_height="800dp">
-
-        </com.github.mikephil.charting.charts.BarChart>
-
-
 
     </LinearLayout>
  </ScrollView>
