@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import samuli.androidbeacons.MainActivity;
 import samuli.androidbeacons.R;
+import samuli.androidbeacons.utils.PreferenceUtils;
 
 public class LogingActivity extends AppCompatActivity {
 
@@ -26,6 +27,12 @@ public class LogingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        if (PreferenceUtils.getUsername(this) != null ){
+            response(PreferenceUtils.getUsername(this), PreferenceUtils.getPassword(this));
+        }else{
+
+        }
 
         final EditText etUsername = (EditText) findViewById(R.id.etUsername);
         final EditText etPassword = (EditText) findViewById(R.id.etPassword);
@@ -53,6 +60,8 @@ public class LogingActivity extends AppCompatActivity {
     }
 
     public void response(String username, String password){
+        final String rUsername = username;
+        final String rPassword = password;
         Response.Listener<String> responseListener = new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -62,6 +71,8 @@ public class LogingActivity extends AppCompatActivity {
                     boolean success = jsonResponse.getBoolean("success");
 
                     if (success) {
+                        PreferenceUtils.saveUsername(rUsername, LogingActivity.this);
+                        PreferenceUtils.savePassword(rPassword, LogingActivity.this);
                         Log.d("tag", "success");
                         String name = jsonResponse.getString("name");
                         int user_id = jsonResponse.getInt("user_id");
