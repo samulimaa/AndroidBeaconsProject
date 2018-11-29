@@ -25,14 +25,16 @@ public class LogingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
 
-        if (PreferenceUtils.getUsername(this) != null ){
+        if (PreferenceUtils.getUsername(this) != null && !PreferenceUtils.getUsername(this).equals("")){
+            Log.d("tagi", "if"+PreferenceUtils.getUsername(this));
             response(PreferenceUtils.getUsername(this), PreferenceUtils.getPassword(this));
         }else{
-
+            Log.d("tagi", "else");
         }
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
 
         final EditText etUsername = (EditText) findViewById(R.id.etUsername);
         final EditText etPassword = (EditText) findViewById(R.id.etPassword);

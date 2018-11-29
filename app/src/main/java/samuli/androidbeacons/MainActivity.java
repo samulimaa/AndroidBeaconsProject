@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import samuli.androidbeacons.loginandregister.LogingActivity;
+import samuli.androidbeacons.utils.PreferenceUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                PreferenceUtils.saveUsername("",MainActivity.this);
+                                PreferenceUtils.savePassword("", MainActivity.this);
                                 Intent intent = new Intent(MainActivity.this, LogingActivity.class);
                                 MainActivity.this.startActivity(intent);
                             }

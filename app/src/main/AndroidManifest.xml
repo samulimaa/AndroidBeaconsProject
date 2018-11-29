@@ -22,7 +22,6 @@
         </activity>
         <activity android:name=".loginandregister.RegisterActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".AutoLoginActivity"></activity>
     </application>
 
 </manifest>
