@@ -9,60 +9,45 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class FragmentVisualize extends Fragment implements DatabaseDataAvailable {
+public class FragmentUserData extends Fragment implements DatabaseDataAvailable {
 
     private PieChart pieChart;
     private PieChart pieChart2;
 
-    private BarChart barChart;
-
     LinearLayout linearLayout;
-
-    private ArrayList<Integer> currentUserTime = new ArrayList<>();
-    private ArrayList<Integer> allUsersTime = new ArrayList<>();
 
     private HashMap<String, Integer> currentUserMap = new HashMap<>();
     private HashMap<String, Integer> allUsersMap = new HashMap<>();
 
-    private int beaconsAmount;
-
     Context mainActivityContext = MainActivity.getContext();
-
     private View view;
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.tab_visualize,container,false);
+        View view = inflater.inflate(R.layout.tab_userdata,container,false);
         this.view = view;
         linearLayout = view.findViewById(R.id.linearLayout);
         getFromDatabase();
         return view;
     }
-
 
     private void getFromDatabase() {
         DatabaseGetter databaseGetter = new DatabaseGetter();
@@ -81,50 +66,26 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
         System.out.println(currentUserMap.toString());
         System.out.println(allUsersMap.toString());
 
-        beaconsAmount = JSONParser.parseBeaconsAmount(jsonObject);
-        System.out.println(beaconsAmount);
-
         pieChart = view.findViewById(R.id.idPieChart);
         pieChart = createPieChart(pieChart, currentUserMap, "You");
 
         pieChart2 = view.findViewById(R.id.idPieChart2);
         pieChart2 = createPieChart(pieChart2, allUsersMap, "All users");
 
+        //notifier.dataAvailable(jsonObject);
 
-        ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObject);
-
-        for (int i = 0; i < beaconsAmount; i++) {
-            TextView textView = new TextView(mainActivityContext);
-            textView.setText(beaconNames.get(i));
-            textView.setTextSize(20f);
-
-            LinearLayout.LayoutParams layoutParamsTextView = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 100);
-
-            BarChart barChart = new BarChart(mainActivityContext);
-            LinearLayout.LayoutParams layoutParamsBarChart = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 700);
-
-            textView.setLayoutParams(layoutParamsTextView);
-            barChart.setLayoutParams(layoutParamsBarChart);
-
-            HashMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObject, beaconNames.get(i));
-            System.out.println(barChartData);
-            barChart = createBarChart(barChart, barChartData);
-
-            linearLayout.addView(textView);
-            linearLayout.addView(barChart);
-        }
     }
 
     private PieChart createPieChart(PieChart pieChart, HashMap<String, Integer> dataHashMap, String centerText) {
-        pieChart.setCenterText(centerText);
+        pieChart.setCenterText(centerText +"\n Total: " + totalSeconds(dataHashMap) + "s");
         pieChart.setCenterTextSize(15f);
         pieChart.setDrawEntryLabels(true);
         pieChart.setEntryLabelTextSize(15f);
         pieChart.getDescription().setText("");
         pieChart.getDescription().setTextSize(15f);
         pieChart.getLegend().setEnabled(true);
+        pieChart.getLegend().setPosition(Legend.LegendPosition.BELOW_CHART_CENTER);
+        pieChart.getLegend().setTextColor(ContextCompat.getColor(mainActivityContext, R.color.white));
 
         ArrayList<PieEntry> yEntrys = new ArrayList<>();
 
@@ -154,45 +115,11 @@ public class FragmentVisualize extends Fragment implements DatabaseDataAvailable
         return pieChart;
     }
 
-    private BarChart createBarChart(BarChart barChart, HashMap<String, Integer> dataMap) {
-
-        TreeMap<String, Integer> dataTreeMap = new TreeMap(dataMap);
-
-        ArrayList<Integer> barYData = new ArrayList<>();
-        barYData.addAll(dataTreeMap.values());
-
-        ArrayList<String> barXData = new ArrayList<>();
-        barXData.addAll(dataTreeMap.keySet());
-
-        ArrayList<BarEntry> group = new ArrayList<>();
-        for (int i = 0; i < barYData.size(); i++) {
-            group.add(new BarEntry(i, barYData.get(i)));
+    private int totalSeconds(HashMap<String, Integer> dataHashMap) {
+        int totalSeconds = 0;
+        for(Integer i : dataHashMap.values()) {
+            totalSeconds += i;
         }
-
-        barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(barXData));
-        barChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-        barChart.getXAxis().setTextSize(15f);
-        barChart.getDescription().setEnabled(false);
-
-        barChart.getAxisLeft().setAxisMinimum(0);
-        barChart.getAxisLeft().setTextSize(15f);
-        barChart.getAxisRight().setTextSize(15f);
-        BarDataSet barDataSet = new BarDataSet(group, null);
-        barDataSet.setValueTextSize(15f);
-
-        List<IBarDataSet> barDataSets = new ArrayList<>();
-        barDataSets.add(barDataSet);
-
-        BarData barData = new BarData(barDataSets);
-        barData.setBarWidth(0.8f);
-        barData.setDrawValues(true);
-
-        barChart.setFitBars(true);
-        barChart.setPinchZoom(false);
-
-        barChart.setData(barData);
-
-        barChart.invalidate();
-        return barChart;
+        return totalSeconds;
     }
 }
