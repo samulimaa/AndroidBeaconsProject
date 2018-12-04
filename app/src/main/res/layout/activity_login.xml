@@ -9,7 +9,6 @@
     android:background="@color/backroundBlue"
     tools:context="samuli.androidbeacons.loginandregister.LogingActivity">
 
-
     <EditText
         android:id="@+id/etUsername"
         android:layout_width="wrap_content"
@@ -20,7 +19,6 @@
         android:ems="15"
         android:hint="Username"
         android:singleLine="true" />
-
 
     <EditText
         android:id="@+id/etPassword"
