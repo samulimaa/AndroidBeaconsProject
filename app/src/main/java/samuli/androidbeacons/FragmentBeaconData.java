@@ -21,9 +21,15 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 public class FragmentBeaconData extends Fragment implements DatabaseDataAvailable {
@@ -48,7 +54,6 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
         databaseGetter.start();
     }
 
-
     public void dataAvailable(JSONObject jsonObject) {
 
         ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObject);
@@ -56,8 +61,6 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
 
         for (int i = 0; i < beaconsAmount; i++) {
             TextView textView = new TextView(mainActivityContext);
-            textView.setText(beaconNames.get(i));
-            textView.setTextSize(20f);
 
             LinearLayout.LayoutParams layoutParamsTextView = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, 100);
@@ -69,27 +72,31 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
             textView.setLayoutParams(layoutParamsTextView);
             barChart.setLayoutParams(layoutParamsBarChart);
 
-            HashMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObject, beaconNames.get(i));
+            TreeMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObject, beaconNames.get(i));
             System.out.println(barChartData);
             barChart = createBarChart(barChart, barChartData);
+
+            textView.setText(beaconNames.get(i) + ", total: " + totalSeconds(barChartData) + "s");
+            textView.setTextSize(20f);
 
             linearLayout.addView(textView);
             linearLayout.addView(barChart);
         }
     }
 
-    private BarChart createBarChart(BarChart barChart, HashMap<String, Integer> dataMap) {
+    private BarChart createBarChart(BarChart barChart, TreeMap<String, Integer> dataMap) {
 
-        TreeMap<String, Integer> dataTreeMap = new TreeMap(dataMap);
+        TreeMap<String, Integer> swappedDatesMap = new TreeMap<>();
+        for (String s : dataMap.keySet()) {
+            swappedDatesMap.put(swapDayMonth(s), dataMap.get(s));
+        }
 
         ArrayList<Integer> barYData = new ArrayList<>();
-        barYData.addAll(dataTreeMap.values());
+        barYData.addAll(swappedDatesMap.values());
 
-        ArrayList<String> barXData = new ArrayList<>();
-        barXData.addAll(dataTreeMap.keySet());
         ArrayList<String> barXDataFormatted = new ArrayList<>();
-        for(String s : barXData) {
-           barXDataFormatted.add(s.substring(0, 5));
+        for(String s : swappedDatesMap.keySet()) {
+           barXDataFormatted.add(swapDayMonth(s).substring(0, 5));
         }
 
         ArrayList<BarEntry> group = new ArrayList<>();
@@ -123,5 +130,21 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
 
         barChart.invalidate();
         return barChart;
+    }
+
+    private String swapDayMonth(String date) {
+        String swapped = "";
+        swapped += date.substring(3,6);
+        swapped += date.substring(0,3);
+        swapped += date.substring(6);
+        return swapped;
+    }
+
+    private int totalSeconds(Map<String, Integer> map) {
+        int total = 0;
+        for (int i : map.values()) {
+            total += i;
+        }
+        return total;
     }
 }

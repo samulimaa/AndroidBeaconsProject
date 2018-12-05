@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 public class JSONParser {
 
@@ -57,8 +58,8 @@ public class JSONParser {
         return beaconTimeMap;
     }
 
-    static HashMap<String, Integer> parseBeaconDates(JSONObject jsonObject, String beaconName) {
-        HashMap hashMap = new HashMap<String, Integer>();
+    static TreeMap<String, Integer> parseBeaconDates(JSONObject jsonObject, String beaconName) {
+        TreeMap treeMap = new TreeMap<String, Integer>();
         try {
             JSONArray jsonArray = jsonObject.getJSONArray("data");
             for(int i = 0; i < jsonArray.length(); i++) {
@@ -66,19 +67,19 @@ public class JSONParser {
                 if (jsonObjectEntry.getString("beacon_name").equals(beaconName)) {
                     String date = jsonObjectEntry.getString("date");
                     int time = jsonObjectEntry.getInt("seconds");
-                    if (hashMap.containsKey(date)) {
-                        int oldTime = (int) hashMap.get(date);
-                        hashMap.remove(date);
-                        hashMap.put(date, oldTime + time);
+                    if (treeMap.containsKey(date)) {
+                        int oldTime = (int) treeMap.get(date);
+                        treeMap.remove(date);
+                        treeMap.put(date, oldTime + time);
                     } else {
-                        hashMap.put(date, time);
+                        treeMap.put(date, time);
                     }
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return hashMap;
+        return treeMap;
     }
 
     static int parseBeaconsAmount(JSONObject jsonObject) {
