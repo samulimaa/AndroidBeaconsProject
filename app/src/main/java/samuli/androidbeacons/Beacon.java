@@ -47,6 +47,8 @@ class Beacon {
         HashMap<String, Double> beaconDistanceMap = OwnBeacons.getOwnBeaconsDistanceHashMap();
         if (beaconDistanceMap. containsKey(deviceAddress)) {
             deviceMaxDistance = beaconDistanceMap.get(deviceAddress);
+        } else {
+            deviceMaxDistance = 0f;
         }
     }
 }
