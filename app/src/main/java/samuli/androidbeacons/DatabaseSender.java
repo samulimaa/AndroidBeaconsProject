@@ -14,14 +14,12 @@ public class DatabaseSender extends Thread {
 
     static boolean sendingEnabled = true;
 
-    int user_id = 7;
+    int user_id = MainActivity.getUserId();
 
     DatabaseSender() {
     }
 
     void sendToDatabase(Beacon beacon, long time) {
-
-        user_id = 7;
 
         if (sendingEnabled) {
             Response.Listener<String> responseListener = new Response.Listener<String>() {
@@ -57,7 +55,6 @@ public class DatabaseSender extends Thread {
             super(Method.POST, REGISTER_REQUEST_URL, listener, null);
             System.out.println(time);
             params = new HashMap<>();
-            user_id = 7;
             params.put("user_id", "" + user_id);
             params.put("seconds", "" + time);
             params.put("beacon_name", beaconName);

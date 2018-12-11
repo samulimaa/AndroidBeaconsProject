@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,7 +72,8 @@ public class FragmentUserData extends Fragment implements DatabaseDataAvailable,
         this.jsonObjectData = jsonObjectData;
         this.jsonObjectUsers = jsonObjectUsers;
 
-        currentUserMap = JSONParser.parseUserTime(jsonObjectData, 7);
+        int user_id = MainActivity.getUserId();
+        currentUserMap = JSONParser.parseUserTime(jsonObjectData, user_id);
 
         System.out.println(currentUserMap.toString());
 

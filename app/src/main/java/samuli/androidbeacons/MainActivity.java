@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
 
     private PageAdapter pageAdapter;
     private ViewPager viewPager;
+
+    static int userId;
+
+    public static int getUserId() { return userId; }
 
     public static Context getContext() {
         return context;
@@ -69,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+
+        Intent intent = getIntent();
+        String name = intent.getStringExtra("name");
+        userId = intent.getIntExtra("user_id", -1);
     }
 
     private void setupViewPager(ViewPager viewPager) {
