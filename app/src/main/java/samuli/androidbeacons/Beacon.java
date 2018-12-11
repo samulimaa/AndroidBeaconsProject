@@ -29,7 +29,7 @@ class Beacon {
         this.rssi = rssi;
 
         loadBeaconNames();
-        //loadBeaconDistances(); uncomment to use beaconDistanceMap for manual distance selection to beacons
+        loadBeaconDistances(); //uncomment to use beaconDistanceMap for manual distance selection to beacons
     }
 
     void loadBeaconNames() {

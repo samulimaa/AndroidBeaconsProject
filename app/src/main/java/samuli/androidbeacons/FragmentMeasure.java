@@ -237,8 +237,8 @@ public class FragmentMeasure extends Fragment {
             Beacon beacon = entry.getValue();
             double distanceToBeacon = distanceFromRssi(beacon.rssi, beacon.txPower);
             timeMeasure.setCurrentBeacon(beacon);
-            //if (distanceToBeacon < beacon.deviceMaxDistance) { //for manually adding beacon distances to beaconDistanceMap
-            if (distanceToBeacon < maxDistanceToBeacon) { //for choosing distance with buttons
+            if (distanceToBeacon < beacon.deviceMaxDistance) { //for manually adding beacon distances to beaconDistanceMap
+            //if (distanceToBeacon < maxDistanceToBeacon) { //for choosing distance with buttons
                 if (!timeMeasure.beaconTimeMeasureMapContains(beacon)) {
                     timeMeasure.startMeasuringTime(beacon);
                 } else {
