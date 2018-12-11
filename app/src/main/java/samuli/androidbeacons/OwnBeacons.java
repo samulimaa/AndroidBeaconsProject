@@ -11,7 +11,7 @@ public class OwnBeacons {
         beaconNamesMap.put("CD:8F:40:E4:97:BF", "Penkkipaikka");
         beaconNamesMap.put("C9:9F:6E:43:C8:CA", "Kyykkypaikka");
         beaconNamesMap.put("E5:1B:6A:DB:B4:D7", "Maastavetopaikka");
-        beaconNamesMap.put("EE:CF:5C:B0:B1:DA", "Talja");
+        beaconNamesMap.put("EE:CF:5C:B0:B1:DA", "Taljapaikka");
         beaconNamesMap.put("DE:F6:F3:71:48:FF", "Pukuhuone");
 
         return beaconNamesMap;
