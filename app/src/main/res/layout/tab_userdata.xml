@@ -27,6 +27,13 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"/>
 
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/btn_dropdown"
+            android:spinnerMode="dropdown"/>
+
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/idPieChart2"
             android:layout_width="match_parent"

@@ -12,10 +12,10 @@ import java.util.TreeMap;
 
 public class JSONParser {
 
-    static HashMap<String, Integer> parseCurrentUserTime(JSONObject jsonObject, int user_id) {
+    static HashMap<String, Integer> parseUserTime(JSONObject jsonObjectData, int user_id) {
         HashMap beaconTimeMap = new HashMap<String, Integer>();
         try {
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            JSONArray jsonArray = jsonObjectData.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
                 if(user_id == jsonObjectEntry.getInt("user_id")) {
@@ -36,10 +36,10 @@ public class JSONParser {
         return beaconTimeMap;
     }
 
-    static HashMap<String, Integer> parseAllUsersTime(JSONObject jsonObject) {
+    static HashMap<String, Integer> parseAllUsersTime(JSONObject jsonObjectData) {
         HashMap beaconTimeMap = new HashMap<String, Integer>();
         try {
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            JSONArray jsonArray = jsonObjectData.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
                 String beacon_name = jsonObjectEntry.getString("beacon_name");
@@ -58,34 +58,34 @@ public class JSONParser {
         return beaconTimeMap;
     }
 
-    static TreeMap<String, Integer> parseBeaconDates(JSONObject jsonObject, String beaconName) {
-        TreeMap treeMap = new TreeMap<String, Integer>();
+    static HashMap<String, Integer> parseBeaconDates(JSONObject jsonObjectData, String beaconName) {
+        HashMap hashMap = new HashMap<String, Integer>();
         try {
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            JSONArray jsonArray = jsonObjectData.getJSONArray("data");
             for(int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
                 if (jsonObjectEntry.getString("beacon_name").equals(beaconName)) {
                     String date = jsonObjectEntry.getString("date");
                     int time = jsonObjectEntry.getInt("seconds");
-                    if (treeMap.containsKey(date)) {
-                        int oldTime = (int) treeMap.get(date);
-                        treeMap.remove(date);
-                        treeMap.put(date, oldTime + time);
+                    if (hashMap.containsKey(date)) {
+                        int oldTime = (int) hashMap.get(date);
+                        hashMap.remove(date);
+                        hashMap.put(date, oldTime + time);
                     } else {
-                        treeMap.put(date, time);
+                        hashMap.put(date, time);
                     }
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return treeMap;
+        return hashMap;
     }
 
-    static int parseBeaconsAmount(JSONObject jsonObject) {
+    static int parseBeaconsAmount(JSONObject jsonObjectData) {
         ArrayList<String> beaconNames = new ArrayList<>();
         try {
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            JSONArray jsonArray = jsonObjectData.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
                 String beaconName = jsonObjectEntry.getString("beacon_name");
@@ -100,10 +100,10 @@ public class JSONParser {
         return beaconNames.size();
     }
 
-    static ArrayList<String> parseAndSortBeaconNames(JSONObject jsonObject) {
+    static ArrayList<String> parseAndSortBeaconNames(JSONObject jsonObjectData) {
         ArrayList<String> beaconNames = new ArrayList<>();
         try {
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            JSONArray jsonArray = jsonObjectData.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
                 String beaconName = jsonObjectEntry.getString("beacon_name");
@@ -116,6 +116,23 @@ public class JSONParser {
         }
         Collections.sort(beaconNames);
         return beaconNames;
+    }
+
+    static TreeMap<String, Integer> parseAllUsers(JSONObject jsonObjectUsers) {
+        TreeMap<String, Integer> usersTreeMap = new TreeMap<>();
+        try {
+            JSONArray jsonArray = jsonObjectUsers.getJSONArray("data");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObjectEntry = jsonArray.getJSONObject(i);
+                String name = jsonObjectEntry.getString("name");
+                Integer user_id = jsonObjectEntry.getInt("user_id");
+                usersTreeMap.put(name, user_id);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return usersTreeMap;
     }
 
 }

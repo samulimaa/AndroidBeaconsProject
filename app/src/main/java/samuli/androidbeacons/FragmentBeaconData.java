@@ -54,10 +54,13 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
         databaseGetter.start();
     }
 
-    public void dataAvailable(JSONObject jsonObject) {
+    public void dataAvailable(JSONObject jsonObjectData, JSONObject jsonObjectUsers) {
 
-        ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObject);
-        int beaconsAmount = JSONParser.parseBeaconsAmount(jsonObject);
+        System.out.println(jsonObjectData);
+        System.out.println(jsonObjectUsers);
+
+        ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObjectData);
+        int beaconsAmount = JSONParser.parseBeaconsAmount(jsonObjectData);
 
         for (int i = 0; i < beaconsAmount; i++) {
             TextView textView = new TextView(mainActivityContext);
@@ -72,7 +75,7 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
             textView.setLayoutParams(layoutParamsTextView);
             barChart.setLayoutParams(layoutParamsBarChart);
 
-            TreeMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObject, beaconNames.get(i));
+            HashMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObjectData, beaconNames.get(i));
             System.out.println(barChartData);
             barChart = createBarChart(barChart, barChartData);
 
@@ -84,7 +87,7 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
         }
     }
 
-    private BarChart createBarChart(BarChart barChart, TreeMap<String, Integer> dataMap) {
+    private BarChart createBarChart(BarChart barChart, Map<String, Integer> dataMap) {
 
         TreeMap<String, Integer> swappedDatesMap = new TreeMap<>();
         for (String s : dataMap.keySet()) {

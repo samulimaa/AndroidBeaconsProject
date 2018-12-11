@@ -8,9 +8,11 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
@@ -20,29 +22,37 @@ import com.github.mikephil.charting.data.PieEntry;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class FragmentUserData extends Fragment implements DatabaseDataAvailable {
+public class FragmentUserData extends Fragment implements DatabaseDataAvailable, AdapterView.OnItemSelectedListener {
 
     private PieChart pieChart;
     private PieChart pieChart2;
 
     LinearLayout linearLayout;
 
+    private JSONObject jsonObjectData;
+    private JSONObject jsonObjectUsers;
+
     private HashMap<String, Integer> currentUserMap = new HashMap<>();
-    private HashMap<String, Integer> allUsersMap = new HashMap<>();
+
+    private TreeMap<String, Integer> userDataMap = new TreeMap<>();
+
+    private ArrayList<String> allUsersList = new ArrayList<>();
 
     Context mainActivityContext = MainActivity.getContext();
+
+    ArrayAdapter<String> adapter;
+
     private View view;
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.tab_userdata,container,false);
+        View view = inflater.inflate(R.layout.tab_userdata, container, false);
         this.view = view;
         linearLayout = view.findViewById(R.id.linearLayout);
         getFromDatabase();
@@ -56,28 +66,50 @@ public class FragmentUserData extends Fragment implements DatabaseDataAvailable 
     }
 
     @Override
-    public void dataAvailable(JSONObject jsonObject) {
+    public void dataAvailable(JSONObject jsonObjectData, JSONObject jsonObjectUsers) {
 
-        System.out.println(jsonObject);
+        this.jsonObjectData = jsonObjectData;
+        this.jsonObjectUsers = jsonObjectUsers;
 
-        currentUserMap = JSONParser.parseCurrentUserTime(jsonObject, 7);
-        allUsersMap = JSONParser.parseAllUsersTime(jsonObject);
+        currentUserMap = JSONParser.parseUserTime(jsonObjectData, 7);
 
         System.out.println(currentUserMap.toString());
-        System.out.println(allUsersMap.toString());
 
         pieChart = view.findViewById(R.id.idPieChart);
         pieChart = createPieChart(pieChart, currentUserMap, "You");
 
-        pieChart2 = view.findViewById(R.id.idPieChart2);
-        pieChart2 = createPieChart(pieChart2, allUsersMap, "All users");
+        allUsersList.add("All users");
+        allUsersList.addAll(JSONParser.parseAllUsers(jsonObjectUsers).keySet());
 
-        //notifier.dataAvailable(jsonObject);
+        Spinner spinner = view.findViewById(R.id.spinner);
+        adapter = new ArrayAdapter<>(mainActivityContext, android.R.layout.simple_spinner_dropdown_item, allUsersList);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
+        pieChart2 = view.findViewById(R.id.idPieChart2);
 
     }
 
-    private PieChart createPieChart(PieChart pieChart, HashMap<String, Integer> dataHashMap, String centerText) {
-        pieChart.setCenterText(centerText +"\n Total: " + totalSeconds(dataHashMap) + "s");
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String userName = adapter.getItem(position);
+        if (position == 0) {
+            userDataMap = new TreeMap<String, Integer>(JSONParser.parseAllUsersTime(jsonObjectData));
+        } else {
+            userDataMap = new TreeMap<String, Integer>(JSONParser.parseUserTime(jsonObjectData, JSONParser.parseAllUsers(jsonObjectUsers).get(userName)));
+        }
+
+        pieChart2 = createPieChart(pieChart2, userDataMap, userName);
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+    private PieChart createPieChart(PieChart pieChart, Map<String, Integer> dataHashMap, String centerText) {
+        pieChart.setCenterText(centerText + "\n Total: " + totalSeconds(dataHashMap) + "s");
         pieChart.setCenterTextSize(15f);
         pieChart.setDrawEntryLabels(true);
         pieChart.setEntryLabelTextSize(15f);
@@ -115,9 +147,9 @@ public class FragmentUserData extends Fragment implements DatabaseDataAvailable 
         return pieChart;
     }
 
-    private int totalSeconds(HashMap<String, Integer> dataHashMap) {
+    private int totalSeconds(Map<String, Integer> dataHashMap) {
         int totalSeconds = 0;
-        for(Integer i : dataHashMap.values()) {
+        for (Integer i : dataHashMap.values()) {
             totalSeconds += i;
         }
         return totalSeconds;
