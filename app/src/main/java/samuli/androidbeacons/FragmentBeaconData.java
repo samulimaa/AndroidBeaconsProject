@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,6 +39,8 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
     private View view;
     private LinearLayout linearLayout;
     private Context mainActivityContext = MainActivity.getContext();
+
+    private int beaconsAmount;
 
     @Nullable
     @Override
@@ -59,10 +63,39 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
         System.out.println(jsonObjectData);
         System.out.println(jsonObjectUsers);
 
-        ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObjectData);
-        int beaconsAmount = JSONParser.parseBeaconsAmount(jsonObjectData);
+        beaconsAmount = JSONParser.parseBeaconsAmount(jsonObjectData);
 
-        for (int i = 0; i < beaconsAmount; i++) {
+        ArrayList<String> beaconNames = JSONParser.parseAndSortBeaconNames(jsonObjectData);
+
+        HashMap<String, HashMap> dataMaps = new HashMap<>();
+        HashMap<String, Integer> unsortedMap = new HashMap<>();
+
+        for(int i = 0; i < beaconsAmount; i++) {
+
+            HashMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObjectData, beaconNames.get(i));
+            dataMaps.put(beaconNames.get(i), barChartData);
+            unsortedMap.put(beaconNames.get(i), totalSeconds(barChartData));
+        }
+
+        LinkedHashMap<String, Integer> sortedMap = sortHashMap(unsortedMap);
+
+        LinkedHashMap<String, HashMap> sortedDataMap = new LinkedHashMap<>();
+        ArrayList<String> sortedMapKeySet = new ArrayList<>(sortedMap.keySet());
+
+        for (String s : sortedMapKeySet) {
+            sortedDataMap.put(s, dataMaps.get(s));
+        }
+
+        createUi(sortedDataMap);
+
+    }
+
+    private void createUi(LinkedHashMap<String, HashMap> dataMaps) {
+
+        ArrayList<String> dataMapsKeySet = new ArrayList<>(dataMaps.keySet());
+        ArrayList<HashMap> dataMapsValues = new ArrayList<>(dataMaps.values());
+        int i = 0;
+        for (HashMap barChartData : dataMapsValues) {
             TextView textView = new TextView(mainActivityContext);
 
             LinearLayout.LayoutParams layoutParamsTextView = new LinearLayout.LayoutParams(
@@ -75,15 +108,16 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
             textView.setLayoutParams(layoutParamsTextView);
             barChart.setLayoutParams(layoutParamsBarChart);
 
-            HashMap<String, Integer> barChartData = JSONParser.parseBeaconDates(jsonObjectData, beaconNames.get(i));
             System.out.println(barChartData);
             barChart = createBarChart(barChart, barChartData);
 
-            textView.setText(beaconNames.get(i) + ", total: " + totalSeconds(barChartData) + "s");
+            textView.setText(dataMapsKeySet.get(i) + ", total: " + totalSeconds(barChartData) + "s");
             textView.setTextSize(20f);
 
             linearLayout.addView(textView);
             linearLayout.addView(barChart);
+
+            i++;
         }
     }
 
@@ -149,5 +183,36 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
             total += i;
         }
         return total;
+    }
+
+    private LinkedHashMap<String, Integer> sortHashMap(HashMap<String, Integer> unsortedMap) {
+
+        List<String> keys = new ArrayList<>(unsortedMap.keySet());
+        List<Integer> values = new ArrayList<>(unsortedMap.values());
+
+        LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap<>();
+
+        Collections.sort(keys, Collections.<String>reverseOrder());
+        Collections.sort(values, Collections.<Integer>reverseOrder());
+
+        Iterator<Integer> valueIterator = values.iterator();
+
+        while (valueIterator.hasNext()) {
+            Integer val = valueIterator.next();
+            Iterator<String> keyIterator = keys.iterator();
+
+            while (keyIterator.hasNext()) {
+                String key = keyIterator.next();
+                Integer value1 = unsortedMap.get(key);
+                Integer value2 = val;
+
+                if (value1.equals(value2)) {
+                    keyIterator.remove();
+                    sortedMap.put(key, val);
+                    break;
+                }
+            }
+        }
+        return sortedMap;
     }
 }
