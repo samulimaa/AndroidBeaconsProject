@@ -16,8 +16,11 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import org.json.JSONObject;
 
@@ -111,7 +114,9 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
             System.out.println(barChartData);
             barChart = createBarChart(barChart, barChartData);
 
-            textView.setText(dataMapsKeySet.get(i) + ", total: " + totalSeconds(barChartData) + "s");
+            System.out.println(dataMapsKeySet.get(i) + totalSeconds(barChartData));
+            System.out.println(secondsToMinutesAndSeconds(totalSeconds(barChartData)));
+            textView.setText(dataMapsKeySet.get(i) + ", total: " + secondsToMinutesAndSeconds(totalSeconds(barChartData)));
             textView.setTextSize(20f);
 
             linearLayout.addView(textView);
@@ -160,6 +165,13 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
         barData.setBarWidth(0.5f);
         barData.setDrawValues(true);
 
+        barData.setValueFormatter(new IValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                return secondsToMinutesAndSeconds((int) value);
+            }
+        });
+
         barChart.setFitBars(true);
         barChart.setPinchZoom(false);
 
@@ -183,6 +195,16 @@ public class FragmentBeaconData extends Fragment implements DatabaseDataAvailabl
             total += i;
         }
         return total;
+    }
+
+    private String secondsToMinutesAndSeconds(int inputSeconds) {
+        int minutes = inputSeconds / 60;
+        int seconds = inputSeconds % 60;
+        if(minutes < 1) {
+            return(seconds + "s");
+        } else {
+            return(minutes + "min " + seconds + "s");
+        }
     }
 
     private LinkedHashMap<String, Integer> sortHashMap(HashMap<String, Integer> unsortedMap) {

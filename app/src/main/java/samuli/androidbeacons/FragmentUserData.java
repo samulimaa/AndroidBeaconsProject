@@ -15,9 +15,12 @@ import android.widget.Spinner;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import org.json.JSONObject;
 
@@ -109,7 +112,7 @@ public class FragmentUserData extends Fragment implements DatabaseDataAvailable,
     }
 
     private PieChart createPieChart(PieChart pieChart, Map<String, Integer> dataHashMap, String centerText) {
-        pieChart.setCenterText(centerText + "\n Total: " + totalSeconds(dataHashMap) + "s");
+        pieChart.setCenterText(centerText + "\n Total: " + secondsToMinutesAndSeconds(totalSeconds(dataHashMap)));
         pieChart.setCenterTextSize(15f);
         pieChart.setDrawEntryLabels(true);
         pieChart.setEntryLabelTextSize(15f);
@@ -140,7 +143,18 @@ public class FragmentUserData extends Fragment implements DatabaseDataAvailable,
         pieDataSet.setColors(colors);
 
         PieData pieData = new PieData(pieDataSet);
+        pieData.setValueTextSize(15f);
+
+        pieData.setValueFormatter(new IValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                return secondsToMinutesAndSeconds((int) value);
+            }
+        });
+
+
         pieChart.setData(pieData);
+
 
         pieChart.invalidate();
 
@@ -153,5 +167,15 @@ public class FragmentUserData extends Fragment implements DatabaseDataAvailable,
             totalSeconds += i;
         }
         return totalSeconds;
+    }
+
+    private String secondsToMinutesAndSeconds(int inputSeconds) {
+        int minutes = inputSeconds / 60;
+        int seconds = inputSeconds % 60;
+        if (minutes < 1) {
+            return (seconds + "s");
+        } else {
+            return (minutes + "min " + seconds + "s");
+        }
     }
 }
