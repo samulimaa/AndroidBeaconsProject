@@ -24,8 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
 
     static int userId;
+    static String username;
 
     public static int getUserId() { return userId; }
+    public static String getUsername() { return username; }
 
     public static Context getContext() {
         return context;
@@ -76,13 +78,13 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         Intent intent = getIntent();
-        String name = intent.getStringExtra("name");
+        username = intent.getStringExtra("name");
         userId = intent.getIntExtra("user_id", -1);
     }
 
     private void setupViewPager(ViewPager viewPager) {
         PageAdapter adapter = new PageAdapter(getSupportFragmentManager());
-        adapter.addFragment(new FragmentMeasure(), "MEASURE DATA");
+        adapter.addFragment(new FragmentMeasure(), "FRONT PAGE");
         adapter.addFragment(new FragmentUserData(), "USER DATA");
         adapter.addFragment(new FragmentBeaconData(), "BEACON DATA");
         viewPager.setAdapter(adapter);
