@@ -2,12 +2,11 @@ package samuli.androidbeacons.loginandregister;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -20,36 +19,25 @@ import samuli.androidbeacons.MainActivity;
 import samuli.androidbeacons.R;
 import samuli.androidbeacons.utils.PreferenceUtils;
 
-public class LogingActivity extends AppCompatActivity {
+public class StartActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_start);
 
-        final EditText etUsername = (EditText) findViewById(R.id.etUsername);
-        final EditText etPassword = (EditText) findViewById(R.id.etPassword);
-        final Button tvRegisterLink = (Button) findViewById(R.id.tvRegisterLink);
-        final Button bLogin = (Button) findViewById(R.id.bSignIn);
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar2);
+        //Setting proggress bar color
+        progressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF, android.graphics.PorterDuff.Mode.MULTIPLY);
 
-        tvRegisterLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent registerIntent = new Intent(LogingActivity.this, RegisterActivity.class);
-                LogingActivity.this.startActivity(registerIntent);
-            }
-        });
-
-        bLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final String username = etUsername.getText().toString();
-                final String password = etPassword.getText().toString();
-
-                // Response received from the server
-                response(username, password);
-            }
-        });
+        //Check if username and password are saved
+        if (PreferenceUtils.getUsername(this) != null && !PreferenceUtils.getUsername(this).equals("")){
+            response(PreferenceUtils.getUsername(this), PreferenceUtils.getPassword(this));
+        }else{
+            Intent intent = new Intent(StartActivity.this, LogingActivity.class);
+            StartActivity.this.startActivity(intent);
+            finish();
+        }
     }
 
     public void response(String username, String password){
@@ -64,21 +52,22 @@ public class LogingActivity extends AppCompatActivity {
                     boolean success = jsonResponse.getBoolean("success");
 
                     if (success) {
-                        PreferenceUtils.saveUsername(rUsername, LogingActivity.this);
-                        PreferenceUtils.savePassword(rPassword, LogingActivity.this);
+                        PreferenceUtils.saveUsername(rUsername, StartActivity.this);
+                        PreferenceUtils.savePassword(rPassword, StartActivity.this);
                         Log.d("tag", "success");
                         String name = jsonResponse.getString("name");
                         int user_id = jsonResponse.getInt("user_id");
                         int age = jsonResponse.getInt("age");
 
-                        Intent intent = new Intent(LogingActivity.this, MainActivity.class);
+                        Intent intent = new Intent(StartActivity.this, MainActivity.class);
                         intent.putExtra("name", name);
                         intent.putExtra("user_id", user_id);
                         //intent.putExtra("age", age);
                         //intent.putExtra("username", username);
-                        LogingActivity.this.startActivity(intent);
+                        StartActivity.this.startActivity(intent);
+                        finish();
                     } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LogingActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(StartActivity.this);
                         builder.setMessage("Login Failed")
                                 .setNegativeButton("Retry", null)
                                 .create()
@@ -92,7 +81,7 @@ public class LogingActivity extends AppCompatActivity {
         };
 
         LoginRequest loginRequest = new LoginRequest(username, password, responseListener);
-        RequestQueue queue = Volley.newRequestQueue(LogingActivity.this);
+        RequestQueue queue = Volley.newRequestQueue(StartActivity.this);
         queue.add(loginRequest);
     }
 }

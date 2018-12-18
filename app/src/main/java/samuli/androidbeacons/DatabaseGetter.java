@@ -65,7 +65,10 @@ public class DatabaseGetter extends Thread {
                 }
             }
         };
-        DataGetRequestData dataRequestData = new DataGetRequestData(7, responseListener);
+
+        int user_id = MainActivity.getUserId();
+
+        DataGetRequestData dataRequestData = new DataGetRequestData(user_id, responseListener);
         queue = Volley.newRequestQueue(MainActivity.getContext());
         queue.add(dataRequestData);
 
