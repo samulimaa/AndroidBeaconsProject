@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -61,13 +63,17 @@ public class FragmentMeasure extends Fragment {
     private TextView textview2;
     private TextView textview3;
 
+    private ImageView locationImageView;
+
     private Button buttonIncrease;
     private Button buttonDecrease;
-    private Button buttonClear;
 
     private CheckBox sendToDatabeseCheckbox;
 
     private TimeMeasure timeMeasure;
+
+    private static String currentBeaconName = "";
+    private static String lastBeaconName = "";
 
     private BluetoothLeScanner scanner;
     private List<ScanFilter> scanFilters;
@@ -80,17 +86,23 @@ public class FragmentMeasure extends Fragment {
         View view = inflater.inflate(R.layout.tab_measure,container,false);
 
         textview = view.findViewById(R.id.textView);
-        textview2 = view.findViewById(R.id.textView2);
-        textview3 = view.findViewById(R.id.textView3);
+
+        textview2 = view.findViewById(R.id.welcomeTextView);
+        String username = MainActivity.getUsername();
+        textview2.setText("Welcome " + username + "!");
+
+        textview3 = view.findViewById(R.id.locationTextView);
+
+        locationImageView = (ImageView) view.findViewById(R.id.locationImageView);
+        locationImageView.setBackgroundResource(R.drawable.empty);
 
         textview.setText("Displaying beacons which distance is less than " + Double.toString(maxDistanceToBeacon) + "m");
-        textview3.setMovementMethod(new ScrollingMovementMethod());
+        //textview3.setMovementMethod(new ScrollingMovementMethod());
 
         timeMeasure = new TimeMeasure();
 
         buttonIncrease = view.findViewById(R.id.button1);
         buttonDecrease = view.findViewById(R.id.button2);
-        buttonClear = view.findViewById(R.id.buttonClear);
 
         sendToDatabeseCheckbox = view.findViewById(R.id.sendToDatabaseCheckbox);
 
@@ -114,21 +126,13 @@ public class FragmentMeasure extends Fragment {
             }
         });
 
-        buttonClear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                textview3.setText("");
-            }
-        });
 
         sendToDatabeseCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            DatabaseSender.sendingEnabled = isChecked;
-       }
-    }
-        );
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DatabaseSender.sendingEnabled = isChecked;
+           }
+        });
 
         init();
         scanFilters = new ArrayList<>();
@@ -232,7 +236,7 @@ public class FragmentMeasure extends Fragment {
     }
 
     private void checkBeacons() {
-        textview2.setText("");
+        //textview2.setText("");
         for (Map.Entry<String, Beacon> entry : deviceToBeaconMap.entrySet()) {
             Beacon beacon = entry.getValue();
             double distanceToBeacon = distanceFromRssi(beacon.rssi, beacon.txPower);
@@ -243,17 +247,47 @@ public class FragmentMeasure extends Fragment {
                     timeMeasure.startMeasuringTime(beacon);
                 } else {
                     timeMeasure.setBeaconLastSeen(beacon);
-                    textview2.append("Measuring beacon: " + beacon.deviceName + ", time: " + timeMeasure.getCurrentTimeInSeconds() + "s \n");
+                    //textview2.append("Measuring beacon: " + beacon.deviceName + ", time: " + timeMeasure.getCurrentTimeInSeconds() + "s \n");
+                    currentBeaconName = timeMeasure.getBeaconName();
+                    //setCurrentLocation(timeMeasure.getBeaconName());
                 }
             } else {
                 if (timeMeasure.beaconTimeMeasureMapContains(beacon)) {
                     timeMeasure.checkIfStop();
-                    textview2.append("Connection lost to: " + timeMeasure.getBeaconName() + ", time to reconnect: " + TimeUnit.MILLISECONDS.toSeconds(OwnBeacons.CONNECTION_LOST_TIME) + "\n");
+                    //textview2.append("Connection lost to: " + timeMeasure.getBeaconName() + ", time to reconnect: " + TimeUnit.MILLISECONDS.toSeconds(OwnBeacons.CONNECTION_LOST_TIME) + "\n");
+
                     if (timeMeasure.isMeasureStopped() && timeMeasure.isMeasureDataValid()) {
-                        textview3.append("Measured beacon: " + timeMeasure.getBeaconName() + ",  time: " + timeMeasure.getMeasuredTimeInSeconds() + "s \n");
+                        //textview3.append("Measured beacon: " + timeMeasure.getBeaconName() + ",  time: " + timeMeasure.getMeasuredTimeInSeconds() + "s \n");
+                        currentBeaconName = "";
                     }
                 }
             }
+
+            //Check if the beacon name has changed
+            if(currentBeaconName != lastBeaconName) {
+                lastBeaconName = currentBeaconName;
+                setCurrentLocation(currentBeaconName);
+            }
+        }
+    }
+
+    /*Used image icons are created by Macrovector - Freepik.com*/
+    private void setCurrentLocation(String beaconname){
+
+        textview3.setText(beaconname);
+
+        if(beaconname == "Pukuhuone"){
+            locationImageView.setBackgroundResource(R.drawable.apppukuhuone);
+        } else if(beaconname == "Taljapaikka"){
+            locationImageView.setBackgroundResource(R.drawable.apptaljapaikka);
+        } else if(beaconname == "Kyykkypaikka"){
+            locationImageView.setBackgroundResource(R.drawable.appkyykkypaikka);
+        }else if(beaconname == "Maastavetopaikka"){
+            locationImageView.setBackgroundResource(R.drawable.appmaastavetopaikka);
+        }else if(beaconname == "Penkkipaikka"){
+            locationImageView.setBackgroundResource(R.drawable.apppenkkipaikka);
+        }else{
+            locationImageView.setBackgroundResource(R.drawable.empty);
         }
     }
 
